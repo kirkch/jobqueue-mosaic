@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mosaic</groupId>
-    <artifactId>jq-mosaic</artifactId>
+    <artifactId>jobqueue-mosaic</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>jqMosaic</name>
+    <name>Job Queue Mosaic</name>
     <description>Very fast, moduler Job Queues.</description>
     
     <packaging>jar</packaging>
