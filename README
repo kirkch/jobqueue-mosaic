@@ -1,14 +1,11 @@
 
-jqMosaic
-=====
+jobqueue-mosaic
+==============
 
 Very fast, modular job queues. Written entirely in Java with no dependencies.
 
 
-Job queue performance. Measured by incrementing an AtomicLong within each job. See MultiThreadedSchedulerPerfTests for
-the code. Java Executors were very slow in these tests because they did not scale out across the 8 cores of the referance
-machine very well. Instead they bottle necked. While jqMosaic had very little overhead and fanned out to use all of the
-cores beautifully.
+Job queue performance. Measured by incrementing an AtomicLong within each job. See MultiThreadedSchedulerPerfTests for the code. Java Executors were very slow in these tests because they did not scale out across the 8 cores of the referance machine very well. Instead they bottle necked. While jqMosaic had very little overhead and fanned out to use all of the cores beautifully.
 
                             average                       range
 Java Executors          -   2million messages/second    (  2 -   3m)
@@ -20,3 +17,16 @@ Thread pinned actors    - 150m mps                      (120 - 200m)
 
 
 
+
+Contacts
+--------
+
+Chris Kirk - kirkch@gmail.com (http://chriskirk.blogspot.co.uk/)
+
+
+The Legal Bit
+-------------
+
+This library is open source.
+You are welcome to use this library freely, with almost no restrictions. We only ask that you contribute back to the main library and give us feedback on your experiences. However that said, it should be made clear that the contributors to this library accept no responsibility for any hair loss, frustration or other foreseeable or unforeseeable consequences that may or may not follow. Use of this library, or code derived from its work is viewed as accepting these terms.
+Contributions to this library are made in the same spirit of above terms.
