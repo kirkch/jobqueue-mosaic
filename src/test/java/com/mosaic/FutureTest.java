@@ -161,6 +161,43 @@ public class FutureTest {
     }
 
 
+
+    @Test( timeout = 100 )
+    public void givenFutureWithResult_getBlocking_expectToReturnImmediatelyWithResult() {
+        Future<String> f = new Future<String>();
+        f.completeWithResult( "foo" );
+
+        assertEquals( "foo", f.getResultBlocking(20) );
+    }
+
+    @Test( timeout = 100 )
+    public void givenFutureWithNoResult_getBlocking_expectToTimeoutWaitingForResult() {
+        Future<String> f = new Future<String>();
+
+        try {
+            f.getResultBlocking(20);
+            fail("expected TimeoutException");
+        } catch ( TimeoutException ex ) {
+            assertTrue( ex.getMessage(), ex.getMessage().startsWith("timed out after ") );
+            assertTrue( ex.getMessage(), ex.getMessage().endsWith("ms") );
+        }
+    }
+
+    @Test( timeout = 100 )
+    public void givenFutureWithNoResult_getBlockingThenFromAnotherThreadCompleteFuture_expectGetBlockingToWakeUpAndReturnValue() {
+        final Future<String> f = new Future<String>();
+
+        new Thread() {
+            @Override
+            public void run() {
+                f.completeWithResult( "hello" );
+            }
+        }.start();
+
+        assertEquals( "hello", f.getResultBlocking( 20 ) );
+    }
+
+
 // givenIncompleteFuture_completeWithException_expectToNotBeAbleToRetrieveResult
 // givenIncompleteFuture_completeWithException_expectToNotBeAbleToCompleteWithResult
 // givenIncompleteFuture_completeWithException_expectToNotBeAbleToCompleteWithException

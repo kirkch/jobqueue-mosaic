@@ -8,8 +8,18 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Future<T> {
     private static final State INITIAL_STATE = new State();
 
-    private final AtomicReference<State<T>> stateRef = new AtomicReference<State<T>>( INITIAL_STATE );
+    private final AtomicReference<State<T>> stateRef            = new AtomicReference<State<T>>( INITIAL_STATE );
+    private final Monitor                   stateChangedMonitor = new Monitor();
 
+    public Future() {}
+
+    public Future( T result ) {
+        completeWithResult( result );
+    }
+
+    public Future( Throwable ex ) {
+        completeWithException( ex );
+    }
 
     public boolean hasCompleted() {
         return stateRef.get().hasCompleted();
@@ -53,6 +63,23 @@ public class Future<T> {
         }
 
         return (T) currentState.result;
+    }
+
+    public T getResultBlocking( int maxMillis ) {
+        long startMillis = System.currentTimeMillis();
+
+        while ( !hasCompleted() ) {
+            long durationSoFar = System.currentTimeMillis() - startMillis;
+            long sleepTime     = maxMillis - durationSoFar;
+
+            if ( sleepTime <= 0 ) {
+                throw new TimeoutException(String.format("timed out after %sms",durationSoFar));
+            }
+
+            stateChangedMonitor.sleep( sleepTime );
+        }
+
+        return getResult();
     }
 
     public Throwable getException() {

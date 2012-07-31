@@ -17,9 +17,9 @@ public class MultiThreadedSchedulerTest {
     @Test
     public void noThreadsCreatedInConstructor() {
         String                 schedulerName     = nextName();
-        int                    beforeThreadCount = countThreads( schedulerName );
+        int                    beforeThreadCount = countThreads( schedulerName+"_" );
         MultiThreadedScheduler scheduler         = new MultiThreadedScheduler( schedulerName, 2, 1 );
-        int                    afterThreadCount  = countThreads( schedulerName );
+        int                    afterThreadCount  = countThreads( schedulerName+"_" );
 
         assertEquals( 0, beforeThreadCount );
         assertEquals( 0, afterThreadCount );
@@ -31,7 +31,7 @@ public class MultiThreadedSchedulerTest {
         MultiThreadedScheduler scheduler     = new MultiThreadedScheduler( schedulerName, 2, 0 );
 
         scheduler.start();
-        spinUntilThreadCountsReaches( schedulerName, 2 );
+        spinUntilThreadCountsReaches( schedulerName+"_", 2 );
     }
 
     @Test
@@ -40,7 +40,7 @@ public class MultiThreadedSchedulerTest {
         MultiThreadedScheduler scheduler     = new MultiThreadedScheduler( schedulerName, 0, 1 );
 
         scheduler.start();
-        spinUntilThreadCountsReaches( schedulerName, 1 );
+        spinUntilThreadCountsReaches( schedulerName+"_", 1 );
     }
 
     @Test
@@ -49,7 +49,7 @@ public class MultiThreadedSchedulerTest {
         MultiThreadedScheduler scheduler     = new MultiThreadedScheduler( schedulerName, 2, 1 );
 
         scheduler.start();
-        spinUntilThreadCountsReaches( schedulerName, 3 );
+        spinUntilThreadCountsReaches( schedulerName+"_", 3 );
     }
 
 
@@ -59,7 +59,7 @@ public class MultiThreadedSchedulerTest {
         MultiThreadedScheduler scheduler     = new MultiThreadedScheduler( schedulerName, 2, 1 );
 
         scheduler.start();
-        spinUntilThreadCountsReaches( schedulerName, 3 );
+        spinUntilThreadCountsReaches( schedulerName+"_", 3 );
 
         scheduler.start();
 
@@ -74,7 +74,7 @@ public class MultiThreadedSchedulerTest {
         scheduler.start();
 
         scheduler.stop();
-        spinUntilThreadCountsReaches( schedulerName, 0 );
+        spinUntilThreadCountsReaches( schedulerName+"_", 0 );
     }
 
     @Test
