@@ -14,7 +14,7 @@ public class FutureTest {
 
         assertFalse( f.hasCompleted() );
         assertFalse( f.hasResult() );
-        assertFalse( f.hasException() );
+        assertFalse( f.hasError() );
     }
 
     @Test
@@ -34,7 +34,7 @@ public class FutureTest {
         Future f = new Future();
 
         try {
-            f.getException();
+            f.getError();
             fail( "Expected ISE");
         } catch ( IllegalStateException e ) {
             assertEquals( "future has not been completed, call isCompleted() first", e.getMessage() );
@@ -70,7 +70,7 @@ public class FutureTest {
         Future<String> f = new Future<String>();
         f.completeWithResult( "hello" );
 
-        assertFalse( f.hasException() );
+        assertFalse( f.hasError() );
     }
 
     @Test
@@ -87,48 +87,48 @@ public class FutureTest {
         Future<String> f = new Future<String>();
         f.completeWithResult( "hello" );
 
-        f.completeWithException( new RuntimeException() ); // expect exception to be ignored
+        f.completeWithError( new Error(new RuntimeException()) ); // expect exception to be ignored
         assertEquals( "hello", f.getResult() );
     }
 
     @Test
     public void givenIncompleteFuture_completeWithThrowable_expectToBeAbleToRetrieveThrowable() {
-        Throwable ex = new RuntimeException( "test exception" );
+        Error error = new Error(new RuntimeException("test exception"));
 
         Future<String> f = new Future<String>();
-        f.completeWithException( ex );
+        f.completeWithError( error );
 
-        assertEquals( ex, f.getException() );
+        assertEquals( error, f.getError() );
     }
 
     @Test
     public void givenFutureCompletedWithException_expectHasCompletedToReturnTrue() {
-        Throwable ex = new RuntimeException( "test exception" );
+        Error error = new Error(new RuntimeException("test exception"));
 
         Future<String> f = new Future<String>();
-        f.completeWithException( ex );
+        f.completeWithError( error );
 
         assertTrue( f.hasCompleted() );
     }
 
     @Test
     public void givenFutureCompletedWithException_expectHasResultToReturnFalse() {
-        Throwable ex = new RuntimeException( "test exception" );
+        Error error = new Error(new RuntimeException("test exception"));
 
         Future<String> f = new Future<String>();
-        f.completeWithException( ex );
+        f.completeWithError( error );
 
         assertFalse( f.hasResult() );
     }
 
     @Test
     public void givenFutureCompletedWithException_expectHasExceptionToReturnTrue() {
-        Throwable ex = new RuntimeException( "test exception" );
+        Error error = new Error(new RuntimeException("test exception"));
 
         Future<String> f = new Future<String>();
-        f.completeWithException( ex );
+        f.completeWithError( error );
 
-        assertTrue( f.hasException() );
+        assertTrue( f.hasError() );
     }
 
     @Test
@@ -137,7 +137,7 @@ public class FutureTest {
         f.completeWithResult( "maddie" );
 
         try {
-            f.getException();
+            f.getError();
             fail( "Expected ISE");
         } catch ( IllegalStateException e ) {
             assertEquals( "future contains a result, not an exception", e.getMessage() );
@@ -146,17 +146,17 @@ public class FutureTest {
 
     @Test
     public void givenIncompleteFuture_completeWithException_expectToNotBeAbleToRetrieveResult() {
-        Throwable ex = new RuntimeException( "test exception" );
+        Error error = new Error(new RuntimeException("test exception"));
 
         Future<String> f = new Future<String>();
-        f.completeWithException( ex );
+        f.completeWithError( error );
 
         try {
             f.getResult();
             fail( "Expected ISE");
-        } catch ( IllegalStateException e ) {
-            assertEquals( "future contains an exception, not a result", e.getMessage() );
-            assertEquals( ex, e.getCause() );
+        } catch ( RuntimeException e ) {
+            assertEquals( "test exception", e.getMessage() );
+            assertEquals( error.asException(), e );
         }
     }
 
@@ -179,7 +179,7 @@ public class FutureTest {
             fail("expected TimeoutException");
         } catch ( TimeoutException ex ) {
             assertTrue( ex.getMessage(), ex.getMessage().startsWith("timed out after ") );
-            assertTrue( ex.getMessage(), ex.getMessage().endsWith("ms") );
+            assertTrue( ex.getMessage(), ex.getMessage().endsWith( "ms" ) );
         }
     }
 

@@ -5,10 +5,19 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class Future<T> {
     private static final State INITIAL_STATE = new State();
 
-    private final AtomicReference<State<T>> stateRef            = new AtomicReference<State<T>>( INITIAL_STATE );
+    // todo
+    // cancel/wasCancelled
+    // onCompletionCallback
+    // onResultCallback/onErrorCallback/onCancelCallback
+    // map/flatMap
+
+    private final AtomicReference<State<T>> stateRef = new AtomicReference<State<T>>( INITIAL_STATE );
+
+    // todo remove monitor by using callback after callbacks have been added
     private final Monitor                   stateChangedMonitor = new Monitor();
 
     public Future() {}
@@ -17,8 +26,12 @@ public class Future<T> {
         completeWithResult( result );
     }
 
+    public Future( Error error ) {
+        completeWithError( error );
+    }
+
     public Future( Throwable ex ) {
-        completeWithException( ex );
+        completeWithError( new Error(ex) );
     }
 
     public boolean hasCompleted() {
@@ -29,8 +42,8 @@ public class Future<T> {
         return stateRef.get().hasResult();
     }
 
-    public boolean hasException() {
-        return stateRef.get().hasException();
+    public boolean hasError() {
+        return stateRef.get().hasError();
     }
 
     public void completeWithResult( T r ) {
@@ -43,7 +56,7 @@ public class Future<T> {
         stateRef.compareAndSet( currentState, newState );
     }
 
-    public void completeWithException( Throwable e ) {
+    public void completeWithError( Error e ) {
         State currentState = stateRef.get();
         if ( currentState.hasCompleted() ) {
             return;
@@ -59,7 +72,7 @@ public class Future<T> {
         if ( !currentState.hasCompleted() ) {
             throw new IllegalStateException( "future has not been completed, call isCompleted() first" );
         } else if ( !currentState.hasResult() ) {
-            throw new IllegalStateException( "future contains an exception, not a result", currentState.ex );
+            currentState.error.throwAsUncheckedException();
         }
 
         return (T) currentState.result;
@@ -82,21 +95,21 @@ public class Future<T> {
         return getResult();
     }
 
-    public Throwable getException() {
+    public Error getError() {
         State currentState = stateRef.get();
 
         if ( !currentState.hasCompleted() ) {
             throw new IllegalStateException( "future has not been completed, call isCompleted() first" );
-        } else if ( !currentState.hasException() ) {
+        } else if ( !currentState.hasError() ) {
             throw new IllegalStateException( "future contains a result, not an exception" );
         }
 
-        return currentState.ex;
+        return currentState.error;
     }
 
 
     private static enum Status {
-        NotCompleted(false), HasResult(true), HasException(true);
+        NotCompleted(false), HasResult(true), HasError(true);
 
         private final boolean isCompleted;
 
@@ -108,31 +121,31 @@ public class Future<T> {
             return this == HasResult;
         }
 
-        public boolean hasException() {
-            return this == HasException;
+        public boolean hasError() {
+            return this == HasError;
         }
     }
 
     private static class State<T> {
         private final Status status;
 
-        private final Throwable ex;
-        private final T         result;
+        private final Error error;
+        private final T     result;
 
         State() {
             this( null, null, Status.NotCompleted );
         }
 
-        private State( Throwable ex ) {
-            this( ex, null, Status.HasException );
+        private State( Error error ) {
+            this( error, null, Status.HasError );
         }
 
         private State( T r ) {
             this( null, r, Status.HasResult );
         }
 
-        private State( Throwable ex, T r, Status status ) {
-            this.ex     = ex;
+        private State( Error error, T r, Status status ) {
+            this.error  = error;
             this.result = r;
             this.status = status;
         }
@@ -145,8 +158,8 @@ public class Future<T> {
             return status.hasResult();
         }
 
-        public boolean hasException() {
-            return status.hasException();
+        public boolean hasError() {
+            return status.hasError();
         }
     }
 }
